@@ -3,21 +3,23 @@ const Schema = mongoose.Schema;
 
 const cartSchema = Schema(
     {
-        userId: { type: Schema.Types.ObjectId, ref: "Users", require: true },
+        customer: { type: Schema.Types.ObjectId, ref: "Users", require: true },
         products: [
             {
-                productId:
-                {
-                    type: Schema.Types.ObjectId,
-                    ref: "Products",
-                    require: true
-                },
+                _id: { type: Schema.Types.ObjectId, require: true },
+                name: { type: String, require: true, unique: true },
+                price: { type: Number, require: true },
+                images: [{ imageUrl: { type: String, require: true } }],
                 quantity: { type: Number, default: 1, require: true },
             }
         ],
+        isDeleted: { type: Boolean, default: false, select: false },
+        totalPrice: { type: Number, require: true }
     },
     { timestamps: true }
 );
+
+// cartSchema.plugin(require("./plugins/isDeletedFalse"));
 
 const Cart = mongoose.model("Carts", cartSchema);
 

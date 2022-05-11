@@ -6,102 +6,69 @@ const Product = require("../models/Product");
 const controllerCart = {};
 controllerCart.addProductToCart = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    const { productId } = req.body
+    const { productId, quantity } = req.body;
 
-    const product = await Product.findOne({ _id: productId })
+    const product = await Product.findById(productId);
     if (!product) {
         throw new AppError(404, "Product not found", "Add product error")
     }
+    const { name, price, images } = product;
+    let cart = await Cart.findOne({ customer: currentUserId, isDeleted: false });
 
-    let productCart = await Cart.findOne({ owner: currentUserId })
-    console.log(productCart)
-    // nếu k tìm thấy thì tạo mới cart
-    if (!productCart) {
-        productCart = await Cart.create({
-            owner: currentUserId,
-            products: productId,
-            quantity: 1,
-            totalPrice: product.price
+    if (!cart) {
+        console.log("a")
+        cart = await Cart.create({
+            customer: currentUserId,
+            products: [
+                { _id: productId, name, price, images, quantity: quantity > 0 ? quantity : 1 }
+            ],
+            totalPrice: price
         })
-    } else if (!productCart.products.includes(productId)) {
-        productCart.products.push(productId)
-        productCart.save()
     }
-    else if (productCart.products.includes(productId)) {
-
+    else {
+        //         // let found = false;
+        //         // cart.products = cart.products.map(product => {
+        //         //     if (product._id.equals(productId)) {
+        //         //         found = true;
+        //         //         return {...product, quantity: product.quantity + 1}
+        //         //     }
+        //         //     return product;
+        //         // })
+        //         // if (!found) {
+        //         //     cart.products.push({
+        //         //         _id: productId, name, price, images, quantity: 1
+        //         //     });
+        //         // }
+        const productCart = cart.products.find(p => p._id.equals(productId));
+        if (productCart) {
+            console.log("c")
+            productCart.quantity += quantity > 0 ? quantity : 1;
+        } else {
+            console.log("b")
+            cart.products.push({
+                _id: productId, name, price, images, quantity: quantity > 0 ? quantity : 1
+            });
+        }
+        cart.products = cart.products.filter(p => p.quantity > 0)
+        cart.totalPrice = cart.products.reduce((total, cur) => {
+            return total + cur.price * cur.quantity
+        }, 0)
+        await cart.save();
     }
 
-    return sendResponse(res, 200, true, productCart, null, "Add product to cart successful")
+    return sendResponse(res, 200, true, { cart }, null, "Add product to cart successful")
 })
+
 
 controllerCart.getListProductCart = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    let { limit, page, ...filter } = req.query;
-    limit = limit || 5;
-    page = page || 1;
 
-    const filterCondition = [];
-
-    const allow = ["name", "collections"]
-    allow.forEach(field => {
-        if (filter[field] !== undefined) {
-            filterCondition.push({
-                [field]: { $regex: filter[field], $options: "i" }
-            })
-        }
-    });
-    const filterCriteria = filterCondition.length ? { $and: filterCondition } : {}
-
-    const products = await Product.find(filterCriteria)
-    const productId = products.map(product => product._id)
-
-    const count = await Cart.countDocuments({ owner: currentUserId, product: { $in: productId } })
-    const totalPage = Math.ceil(count / limit)
-    const offset = limit * (page - 1)
-
-    const productCart = await Cart.find({ owner: currentUserId, product: { $in: productId } })
-        .sort({ updatedAt: -1 })
-        .skip(offset)
-        .limit(limit)
-        .populate("owner")
-        .populate("product")
-
-    if (!productCart) {
-        throw new AppError(404, "You can not see list products of this user", "Get list product error")
+    let cart = await Cart.findOne({ userId: currentUserId, isDeleted: false })
+    if (!cart) {
+        throw new AppError(404, "Can not find products in your cart ", "Get list product error")
     }
 
-    return sendResponse(res, 200, true, { productCart, count, totalPage }, null, "Get list product in cart successful")
-})
-
-controllerCart.updateProductCart = catchAsync(async (req, res, next) => {
-    const { currentUserId } = req;
-    const { quantity } = req.body;
-    const { cartId } = req.params;
-
-    let productCart = await Cart.findOne({ owner: currentUserId, _id: cartId })
-        .populate("product");
-    if (!productCart) {
-        throw new AppError(404, "You can not delete this product", "delete product error")
-    }
-
-    productCart.quantity = quantity;
-    productCart.totalPrice = productCart.product.price * quantity;
-    productCart.save();
-
-    return sendResponse(res, 200, true, productCart, null, "Update cart successful")
-})
-
-controllerCart.deleteProductcart = catchAsync(async (req, res, next) => {
-    const { currentUserId } = req;
-    const { cartId } = req.params
-    console.log(cartId)
-
-    const productCart = await Cart.findOneAndDelete({ owner: currentUserId, _id: cartId })
-    if (!productCart) {
-        throw new AppError(404, "You can not delete this product", "delete product error")
-    }
-
-    return sendResponse(res, 200, true, {}, null, "Delete successful")
+    return sendResponse(res, 200, true, { cart }, null, "Get list product in cart successful")
 })
 
 

@@ -6,14 +6,18 @@ const Orders = require("../models/Orders");
 const controllerOrders = {};
 controllerOrders.addNewOrders = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    const { listCartId } = req.body;
+    const { productIds } = req.body;
+    let total = 0;
 
-    const carts = await Cart.find({ owner: currentUserId });
-    if (!carts.length) {
+    // const products = productIds.map(productId => {
+    //     const product = await Cart.findOne({})
+    // })
+    const carts = await Cart.find({ userId: currentUserId, isDeleted: false });
+    if (!carts) {
         throw new AppError(404, "Your cart not found", "Add new order error")
     }
-    const total = carts.map(cart => cart.totalPrice)
-    console.log("total", total)
+    // const total = carts.map(cart => cart.totalPrice)
+    // console.log("total", total)
 
     const totalPrice = total.reduce((acc, currentValue) => {
         return total + currentValue;

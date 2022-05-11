@@ -3,16 +3,16 @@ const Schema = mongoose.Schema;
 
 const productSchema = Schema({
     name: { type: String, require: true, unique: true },
-    categories: { type: Array },
+    categories: { type: String, require: true },
     description: { type: String, require: true },
-    image: { type: String, require: true },
-    price: { type: String, require: true },
-    size: { type: String },
-    // quantity: { type: Number, require: false },
-    // purchases: { type: String, require: false } //Lượt mua
+    imageUrl: { type: String, require: true },
+    price: { type: Number, require: true },
+    isDeleted: { type: Boolean, default: false, select: false },
 },
     { timestamps: true }
 );
+
+// productSchema.plugin(require("./plugins/isDeletedFalse"));
 
 const Product = mongoose.model("Products", productSchema);
 

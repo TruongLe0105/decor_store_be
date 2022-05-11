@@ -19,7 +19,15 @@ app.use(cors());
 
 /* DB Connection */
 mongoose
-    .connect(mongoURI)
+    .connect(mongoURI,
+    // {
+    //     // some options to deal with deprecated warning
+    //     useCreateIndex: true,
+    //     useNewUrlParser: true,
+    //     useFindAndModify: false,
+    //     useUnifiedTopology: true,
+    // }
+)
     .then(() => {
         console.log(`DB connected`);
         // require("./createFriend.js");
@@ -30,33 +38,27 @@ app.use("/api", indexRouter);
 
 // catch 404 and forard to error handler
 app.use((req, res, next) => {
-    const err = new Error("Not Found");
-    err.statusCode = 404;
+    const err = new Error("404 - Resource not found");
     next(err);
 });
 
 /* Initialize Error Handling */
 app.use((err, req, res, next) => {
     console.log("ERROR", err);
-    if (err.isOperational) {
-        return sendResponse(
-            res,
-            err.statusCode ? err.statusCode : 500,
-            false,
-            null,
-            { message: err.message },
-            err.errorType
-        );
+    const statusCode = err.message.split(" - ")[0];
+    const message = err.message.split(" - ")[1];
+    if (!isNaN(statusCode)) {
+        sendResponse(res, statusCode, false, null, { message }, null);
     } else {
-        return sendResponse(
+        sendResponse(
             res,
-            err.statusCode ? err.statusCode : 500,
+            500,
             false,
             null,
             { message: err.message },
             "Internal Server Error"
         );
     }
-});
+})
 
 module.exports = app;

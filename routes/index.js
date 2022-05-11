@@ -5,13 +5,16 @@ var router = express.Router();
 const userRouter = require("./users.api");
 router.use("/user", userRouter);
 
-const cartRouter = require("./cart.api")
-router.use("/cart", cartRouter)
+const authRouter = require("./auth.api");
+router.use("/auth", authRouter)
 
-const productRouter = require("./product.api")
-router.use("/product", productRouter)
+const cartRouter = require("./cart.api");
+router.use("/cart", cartRouter);
 
-const orderRouter = require("./orders.api")
-router.use("/orders", orderRouter)
+const productRouter = require("./product.api");
+router.use("/product", productRouter);
+
+const orderRouter = require("./orders.api");
+router.use("/orders", orderRouter);
 
 module.exports = router;

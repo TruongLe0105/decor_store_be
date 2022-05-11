@@ -15,12 +15,15 @@ const ordersSchema = Schema(
                 quantity: { type: Number, default: 1, require: true },
             }
         ],
-        amount: { type: Number, require: true },
+        total: { type: Number, require: true },
         address: { type: Object, require: true },
-        status: { type: String, default: "pending" }
+        status: { type: String, enum: ["pending", "confirm", "delivery", "completed"], default: "pending" },
+        isDeleted: { type: Boolean, default: false, select: false }
     },
     { timestamps: true }
 );
+
+// ordersSchema.plugin(require("./plugins/isDeletedFalse"));
 
 const Orders = mongoose.model("Orders", ordersSchema);
 
