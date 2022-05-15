@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
+const Cart = require("../models/Cart");
 const User = require("../models/User");
 
 const controllerAuth = {};
@@ -14,6 +15,10 @@ controllerAuth.loginWithEmailPassword = catchAsync(async (req, res, next) => {
     if (!isMatch) {
         throw new AppError(400, "Wrong password", "Login error")
     }
+    const cart = await Cart.findOne({ user: user._id });
+    if (!cart) {
+        throw new AppError(404, "cart not found", "login error")
+    }
 
     const accessToken = user.generateToken()
 
@@ -21,7 +26,7 @@ controllerAuth.loginWithEmailPassword = catchAsync(async (req, res, next) => {
         res,
         200,
         true,
-        { user, accessToken },
+        { user, cart, accessToken },
         null,
         "Login successful")
 });

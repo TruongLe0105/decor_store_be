@@ -3,7 +3,7 @@ var router = express.Router();
 
 /** User endpoints (UF) */
 const userRouter = require("./users.api");
-router.use("/user", userRouter);
+router.use("/users", userRouter);
 
 const authRouter = require("./auth.api");
 router.use("/auth", authRouter)
@@ -12,7 +12,7 @@ const cartRouter = require("./cart.api");
 router.use("/cart", cartRouter);
 
 const productRouter = require("./product.api");
-router.use("/product", productRouter);
+router.use("/products", productRouter);
 
 const orderRouter = require("./orders.api");
 router.use("/orders", orderRouter);

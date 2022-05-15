@@ -1,52 +1,49 @@
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
+const User = require("../models/User");
 
 
 const controllerCart = {};
 controllerCart.addProductToCart = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    const { productId, quantity } = req.body;
+
+    let { productId, quantity, cartId } = req.body;
 
     const product = await Product.findById(productId);
     if (!product) {
         throw new AppError(404, "Product not found", "Add product error")
     }
-    const { name, price, images } = product;
-    let cart = await Cart.findOne({ customer: currentUserId, isDeleted: false });
+
+    const { name, price, imageUrl } = product;
+    let cart = await Cart.findOne({ _id: cartId, isDeleted: false });
+    const LIMIT_PRODUCT_CAN_BUY = 9;
 
     if (!cart) {
-        console.log("a")
         cart = await Cart.create({
-            customer: currentUserId,
+            _id: cartId,
+            user: currentUserId,
             products: [
-                { _id: productId, name, price, images, quantity: quantity > 0 ? quantity : 1 }
+                { _id: productId, name, price, imageUrl, quantity: (quantity > 0 && quantity <= LIMIT_PRODUCT_CAN_BUY) ? quantity : 1 }
             ],
-            totalPrice: price
+            totalPrice: price,
         })
-    }
-    else {
-        //         // let found = false;
-        //         // cart.products = cart.products.map(product => {
-        //         //     if (product._id.equals(productId)) {
-        //         //         found = true;
-        //         //         return {...product, quantity: product.quantity + 1}
-        //         //     }
-        //         //     return product;
-        //         // })
-        //         // if (!found) {
-        //         //     cart.products.push({
-        //         //         _id: productId, name, price, images, quantity: 1
-        //         //     });
-        //         // }
+    } else {
         const productCart = cart.products.find(p => p._id.equals(productId));
         if (productCart) {
-            console.log("c")
-            productCart.quantity += quantity > 0 ? quantity : 1;
+            if (productCart.quantity <= LIMIT_PRODUCT_CAN_BUY) {
+                if (quantity > 0) {
+                    productCart.quantity += quantity;
+                }
+                else if (quantity < 0 && quantity !== -1) {
+                    productCart.quantity = quantity;
+                } else if (quantity === -1) {
+                    productCart.quantity += quantity;
+                }
+            }
         } else {
-            console.log("b")
             cart.products.push({
-                _id: productId, name, price, images, quantity: quantity > 0 ? quantity : 1
+                _id: productId, name, price, imageUrl, quantity: quantity > 0 ? quantity : 1
             });
         }
         cart.products = cart.products.filter(p => p.quantity > 0)
@@ -56,6 +53,7 @@ controllerCart.addProductToCart = catchAsync(async (req, res, next) => {
         await cart.save();
     }
 
+
     return sendResponse(res, 200, true, { cart }, null, "Add product to cart successful")
 })
 
@@ -63,9 +61,15 @@ controllerCart.addProductToCart = catchAsync(async (req, res, next) => {
 controllerCart.getListProductCart = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
 
-    let cart = await Cart.findOne({ userId: currentUserId, isDeleted: false })
+    const user = await User.findById(currentUserId);
+    if (!user) {
+        throw new AppError(401, "You can not access in this cart");
+    }
+    const { cartId } = user;
+
+    let cart = await Cart.findOne({ _id: cartId, isDeleted: false })
     if (!cart) {
-        throw new AppError(404, "Can not find products in your cart ", "Get list product error")
+        throw new AppError(404, "Do not find products in your cart ", "Get list product error")
     }
 
     return sendResponse(res, 200, true, { cart }, null, "Get list product in cart successful")

@@ -11,7 +11,7 @@ router.get('/me', loginRequired, getCurrentUserProfile);
 
 router.post('/register', register);
 
-router.put('/profile/me', loginRequired, updateCurrentProfile);
+router.put('/me/update', loginRequired, updateCurrentProfile);
 
 router.put('/password',
     loginRequired,

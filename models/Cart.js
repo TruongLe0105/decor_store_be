@@ -3,18 +3,18 @@ const Schema = mongoose.Schema;
 
 const cartSchema = Schema(
     {
-        customer: { type: Schema.Types.ObjectId, ref: "Users", require: true },
+        user: { type: Schema.Types.ObjectId, require: true },
         products: [
             {
                 _id: { type: Schema.Types.ObjectId, require: true },
-                name: { type: String, require: true, unique: true },
+                name: { type: String, require: true },
                 price: { type: Number, require: true },
-                images: [{ imageUrl: { type: String, require: true } }],
+                imageUrl: { type: String, require: true },
                 quantity: { type: Number, default: 1, require: true },
             }
         ],
         isDeleted: { type: Boolean, default: false, select: false },
-        totalPrice: { type: Number, require: true }
+        totalPrice: { type: Number, default: 0, require: true }
     },
     { timestamps: true }
 );

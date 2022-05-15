@@ -15,40 +15,35 @@ controllerProduct.addProductByAdmin = catchAsync(async (req, res, next) => {
 })
 
 controllerProduct.getListProduct = catchAsync(async (req, res, next) => {
-    let { limit, page, sortBy, ...filter } = req.query;
-    limit = limit || 10;
-    page = page || 1;
+    let { limit, page, ...filter } = { ...req.query };
 
-    let filterCondition = [{ isDeleted: false }];
-    const allowFilter = ["name", "categories"];
+    limit = parseInt(limit) || 5;
+    page = parseInt(page) || 1;
 
-    // let sortCondition = [];
-    // const allowSort = ["price", "updateAt"];
-    // allowSort.forEach(field =>{
-    //     if(sortBy === field) {
+    let filterConditions = [{ isDeleted: false }];
 
-    //     }
-    // })
-
-    allowFilter.forEach(field => {
+    let allow = ["name", "categories"]
+    console.log(allow)
+    allow.forEach((field) => {
+        console.log([field])
         if (filter[field] !== undefined) {
-            filterCondition.push({
+            filterConditions.push({
                 [field]: { $regex: filter[field], $options: "i" },
             });
         }
-    });
+    })
+    const filterCrireria = filterConditions.length
+        ? { $and: filterConditions }
+        : {};
 
-    const filterCriteria = filterCondition.length ? { $and: filterCondition } : {};
-
-    const count = await Product.countDocuments({ filterCriteria });
+    const count = await Product.countDocuments(filterCrireria);
     const totalPage = Math.ceil(count / limit);
     const offset = limit * (page - 1);
 
-    const products = await Product.find({ filterCriteria })
-        .sort({ createAt: -1 })
+    let products = await Product.find(filterCrireria)
+        .sort({ createdAt: -1 })
         .skip(offset)
-        .limit(limit)
-    console.log(products)
+        .limit(limit);
 
     return sendResponse(res, 200, true, { products, count, totalPage }, null, "Get list products successful");
 })

@@ -12,7 +12,11 @@ router.post("/add", loginRequired,
     ]),
     addProductToCart);
 
-router.get("/list", loginRequired, getListProductCart);
+router.get("/", loginRequired,
+    // validate([
+    //     body("cartId").exists().isString().custom(checkObjectId),
+    // ]),
+    getListProductCart);
 
 // router.put("/update/:cartId", loginRequired,
 //     validate([
