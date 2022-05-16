@@ -6,7 +6,7 @@ const User = require("../models/User");
 
 const controllerUser = {};
 controllerUser.register = catchAsync(async (req, res, next) => {
-    let { name, email, password } = req.body;
+    let { userName, email, password } = req.body;
 
     let user = await User.findOne({ email });
     if (user) {
@@ -17,7 +17,7 @@ controllerUser.register = catchAsync(async (req, res, next) => {
     password = await bcrypt.hash(password, salt)
 
     user = await User.create({
-        name,
+        userName,
         email,
         password,
     });
@@ -62,7 +62,7 @@ controllerUser.updateCurrentProfile = catchAsync(async (req, res, next) => {
     if (!user) {
         throw new AppError(404, "User not found", "Update user's profile error")
     }
-    const allow = ["name", "city", "country", "avatarUrl", "address", "numberOfPhone"]
+    const allow = ["fullName", "city", "country", "avatarUrl", "address", "numberOfPhone"]
     allow.forEach((field) => {
         if (body[field] !== undefined) {
             user[field] = body[field];

@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/add", loginRequired,
     validate([
         body("productId").exists().isString().custom(checkObjectId),
-        body("quantity").exists().isNumeric()
+        // body("quantity").exists().isNumeric()
     ]),
     addProductToCart);
 

@@ -18,6 +18,7 @@ controllerCart.addProductToCart = catchAsync(async (req, res, next) => {
     const { name, price, imageUrl } = product;
     let cart = await Cart.findOne({ _id: cartId, isDeleted: false });
     const LIMIT_PRODUCT_CAN_BUY = 9;
+    quantity = Number(quantity);
 
     if (!cart) {
         cart = await Cart.create({
@@ -33,13 +34,16 @@ controllerCart.addProductToCart = catchAsync(async (req, res, next) => {
         if (productCart) {
             if (productCart.quantity <= LIMIT_PRODUCT_CAN_BUY) {
                 if (quantity > 0) {
-                    productCart.quantity += quantity;
+                    productCart.quantity += quantity //Ở đây...
+                    if (productCart.quantity >= LIMIT_PRODUCT_CAN_BUY) productCart.quantity = LIMIT_PRODUCT_CAN_BUY;
                 }
                 else if (quantity < 0 && quantity !== -1) {
                     productCart.quantity = quantity;
                 } else if (quantity === -1) {
                     productCart.quantity += quantity;
                 }
+            } else {
+                productCart.quantity = LIMIT_PRODUCT_CAN_BUY;
             }
         } else {
             cart.products.push({

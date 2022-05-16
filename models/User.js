@@ -5,15 +5,17 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 const userSchema = Schema({
     cartId: { type: Schema.Types.ObjectId, require: true, ref: "Carts" },
-    name: { type: String, require: true },
+    userName: { type: String, require: true, unique: true },
+    fullName: { type: String, require: false, default: "" },
+    // name: { type: String, require: false, default: "" },
     email: { type: String, require: true, unique: true },
     password: { type: String, require: true, select: false },
     role: { type: String, enum: ["admin", "user"], default: "user", },
     avatarUrl: { type: String, require: false, default: "" },
     city: { type: String, require: false, default: "" },
     country: { type: String, require: false, default: "" },
-    address: [{ type: String }],
-    numberOfPhone: { type: Number, default: 0 },
+    address: [{ type: String, require: false, default: "" }],
+    numberOfPhone: { type: String, require: false, default: "" },
     isDeleted: { type: Boolean, default: false, select: false }
 },
     { timestamps: true },

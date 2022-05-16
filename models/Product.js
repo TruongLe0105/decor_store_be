@@ -3,9 +3,9 @@ const Schema = mongoose.Schema;
 
 const productSchema = Schema({
     name: { type: String, require: true, unique: true },
-    categories: { type: String, require: true },
-    description: { type: String, require: true },
-    imageUrl: { type: String, require: true },
+    categories: { type: String },
+    description: { type: String },
+    imageUrl: { type: String },
     price: { type: Number, require: true },
     isDeleted: { type: Boolean, default: false, select: false },
 },
