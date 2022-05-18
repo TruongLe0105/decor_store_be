@@ -1,36 +1,35 @@
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 const Cart = require("../models/Cart");
 const Orders = require("../models/Orders");
+const User = require("../models/User");
 
 
 const controllerOrders = {};
-controllerOrders.addNewOrders = catchAsync(async (req, res, next) => {
+controllerOrders.createNewOrder = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    const { productIds } = req.body;
-    let total = 0;
+    const { cartProducts, delivery, totalPrice, user } = req.body;
+    const { numberOfPhone, address, receiver } = delivery;
 
-    // const products = productIds.map(productId => {
-    //     const product = await Cart.findOne({})
-    // })
-    const carts = await Cart.find({ userId: currentUserId, isDeleted: false });
-    if (!carts) {
-        throw new AppError(404, "Your cart not found", "Add new order error")
+    if (user._id !== currentUserId) {
+        throw new AppError(404, "User not found", "Checkout error")
     }
-    // const total = carts.map(cart => cart.totalPrice)
-    // console.log("total", total)
 
-    const totalPrice = total.reduce((acc, currentValue) => {
-        return total + currentValue;
-    }, 0)
+    if (cartProducts.length === 0) {
+        throw new AppError(400, "Đơn hàng không có sản phẩm", "Create order error")
+    }
+    const order = await Orders.create({
+        user,
+        address,
+        numberOfPhone,
+        receiver,
+        cartProducts,
+        totalPrice,
+    });
 
-    const orders = await Orders.create({
-        buyer: currentUserId,
-        listProducts: listCartId,
-        status: "pending",
-        ordersPrice: totalPrice,
-    })
+    let cart = await Cart.findOneAndUpdate({ _id: user.cartId, isDeleted: false }, { products: [], totalPrice: 0 });
+    console.log("cart", cart);
 
-    return sendResponse(res, 200, true, { orders }, null, "");
+    return sendResponse(res, 200, true, { order }, null, "");
 });
 controllerOrders.getListOrders = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;

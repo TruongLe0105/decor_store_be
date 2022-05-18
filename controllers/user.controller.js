@@ -22,7 +22,6 @@ controllerUser.register = catchAsync(async (req, res, next) => {
         password,
     });
 
-    console.log("user", user)
     let cart = await Cart.findOne({ user: user._id, isDeleted: false })
     if (cart) {
         throw new AppError(400, "Cart already exits", "Register error")
@@ -31,13 +30,8 @@ controllerUser.register = catchAsync(async (req, res, next) => {
         user: user._id,
         products: [],
     });
-    console.log("abc")
-
-    console.log("cart", cart)
-
     user.cartId = cart._id;
     await user.save();
-    console.log("userSave", user)
 
     const accessToken = user.generateToken()
 
@@ -46,33 +40,38 @@ controllerUser.register = catchAsync(async (req, res, next) => {
 
 controllerUser.getCurrentUserProfile = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    const user = await User.findOne({ _id: currentUserId, isDeleted: false })
-    // .populate("cartId")
+    const user = await User.findOne({ _id: currentUserId, isDeleted: false });
+
     if (!user) {
         throw new AppError(404, "User not found", "Get profile user error")
-    }
+    };
 
     return sendResponse(res, 200, true, user, null, "Get profile successful")
 });
 
 controllerUser.updateCurrentProfile = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    const body = req.body
+    const body = req.body;
     let user = await User.findOne({ _id: currentUserId, isDeleted: false })
     if (!user) {
         throw new AppError(404, "User not found", "Update user's profile error")
-    }
-    const allow = ["fullName", "city", "country", "avatarUrl", "address", "numberOfPhone"]
+    };
+
+    const allow = ["fullName", "city", "country", "address", "avatarUrl", "numberOfPhone"];
     allow.forEach((field) => {
         if (body[field] !== undefined) {
             user[field] = body[field];
-        }
-    })
+        };
+    });
+
     await user.save();
 
     return sendResponse(res, 200, true, user, null, "Update profile successful")
 });
 
+// controllerUser.addOrderAddress = catchAsync(async(req,res, next)=>{
+
+// })
 controllerUser.changePassword = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
     let { password, newPassword } = req.body;
@@ -95,7 +94,7 @@ controllerUser.changePassword = catchAsync(async (req, res, next) => {
     user.password = newPassword;
     await user.save();
     return sendResponse(res, 200, true, { user }, null, "Change password successful")
-})
+});
 
 controllerUser.deactivateAccount = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
@@ -108,6 +107,70 @@ controllerUser.deactivateAccount = catchAsync(async (req, res, next) => {
         throw new AppError(404, "User not found", "Deactivate user error")
     }
     return sendResponse(res, 200, true, user, null, "Deactivate successful")
+});
+
+
+controllerUser.addNewAddress = catchAsync(async (req, res, next) => {
+    const { currentUserId } = req;
+    const { receiver, address, numberOfPhone } = req.body;
+    let user = await User.findOne({ _id: currentUserId, isDeleted: false })
+    if (!user) {
+        throw new AppError(404, "User not found", "Update order address error")
+    };
+    user.orderAddress.push({
+        receiver,
+        address,
+        numberOfPhone,
+    })
+
+    await user.save();
+
+    return sendResponse(res, 200, true, { user }, null, "Thêm địa chỉ thành công")
+})
+
+controllerUser.updateAddress = catchAsync(async (req, res, next) => {
+    const { currentUserId } = req;
+    const { receiver, address, numberOfPhone, addressId } = req.body;
+    console.log("body", req.body)
+
+    let user = await User.findOne({ _id: currentUserId, isDeleted: false })
+    if (!user) {
+        throw new AppError(404, "User not found", "Update order address error")
+    };
+
+    const found = user.orderAddress.find(address => address._id.equals(addressId));
+    if (!found) {
+        throw new AppError(404, "Địa chỉ không tìm thấy", "Update address error")
+    }
+    found.receiver = receiver,
+        found.address = address,
+        found.numberOfPhone = numberOfPhone
+
+    await user.save();
+
+    return sendResponse(res, 200, true, user, null, "Update address success!")
+});
+
+controllerUser.deleteAddress = catchAsync(async (req, res, next) => {
+    const { currentUserId } = req;
+    const { addressId } = req;
+    console.log("addressId", addressId);
+    let user = await User.findOne({ _id: currentUserId, isDeleted: false })
+    if (!user) {
+        throw new AppError(404, "User not found", "Update order address error")
+    };
+
+    const addressFound = user.orderAddress.find(address => address._id.equals(addressId));
+
+    if (!addressFound) {
+        throw new AppError(404, "Địa chỉ không tồn tại", "Delete address error!")
+    };
+
+    user.orderAddress.filter(address => address._id !== addressId);
+
+    await user.save();
+
+    return sendResponse(res, 200, true, {}, null, "Delete address successful");
 })
 
 // filter 10 new users to donate a gift

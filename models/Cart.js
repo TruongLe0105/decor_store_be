@@ -6,7 +6,6 @@ const cartSchema = Schema(
         user: { type: Schema.Types.ObjectId, require: true },
         products: [
             {
-                _id: { type: Schema.Types.ObjectId, require: true },
                 pruductName: { type: String, require: true },
                 price: { type: Number, require: true },
                 imageUrl: { type: String, require: true },

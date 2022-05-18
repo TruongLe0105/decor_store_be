@@ -17,15 +17,15 @@ controllerProduct.addProductByAdmin = catchAsync(async (req, res, next) => {
 controllerProduct.getListProduct = catchAsync(async (req, res, next) => {
     let { limit, page, ...filter } = { ...req.query };
 
+    // console.log("name", ...filter)
+
     limit = parseInt(limit) || 5;
     page = parseInt(page) || 1;
 
     let filterConditions = [{ isDeleted: false }];
 
     let allow = ["name", "categories"]
-    console.log(allow)
     allow.forEach((field) => {
-        console.log([field])
         if (filter[field] !== undefined) {
             filterConditions.push({
                 [field]: { $regex: filter[field], $options: "i" },

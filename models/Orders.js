@@ -3,20 +3,17 @@ const Schema = mongoose.Schema;
 
 const ordersSchema = Schema(
     {
-        userId: { type: Schema.Types.ObjectId, ref: "Users", require: true },
-        products: [
-            {
-                productId:
-                {
-                    type: Schema.Types.ObjectId,
-                    ref: "Products",
-                    require: true
-                },
-                quantity: { type: Number, default: 1, require: true },
-            }
+        user: { type: Schema.Types.ObjectId, ref: "Users", require: true, default: false },
+        cartProducts: [
+            // {
+            //     productId: { type: Schema.Types.ObjectId, require: true, default: false },
+            //     quantity: { type: Number, require: true, default: false },
+            // },
         ],
-        total: { type: Number, require: true },
-        address: { type: Object, require: true },
+        totalPrice: { type: Number, require: true, default: false },
+        numberOfPhone: { type: Number, require: true, default: false },
+        receiver: { type: String, require: true, default: false },
+        address: { type: String, require: true, default: false },
         status: { type: String, enum: ["pending", "confirm", "delivery", "completed"], default: "pending" },
         isDeleted: { type: Boolean, default: false, select: false }
     },

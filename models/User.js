@@ -7,16 +7,20 @@ const userSchema = Schema({
     cartId: { type: Schema.Types.ObjectId, require: true, ref: "Carts" },
     userName: { type: String, require: true, unique: true },
     fullName: { type: String, require: false, default: "" },
-    // name: { type: String, require: false, default: "" },
     email: { type: String, require: true, unique: true },
     password: { type: String, require: true, select: false },
     role: { type: String, enum: ["admin", "user"], default: "user", },
     avatarUrl: { type: String, require: false, default: "" },
     city: { type: String, require: false, default: "" },
     country: { type: String, require: false, default: "" },
-    address: [{ type: String, require: false, default: "" }],
+    address: { type: String, require: false, default: "" },
+    orderAddress: [{
+        receiver: { type: String, require: true, default: "" },
+        numberOfPhone: { type: Number, require: true, default: 0 },
+        address: { type: String, require: true, default: "", unique: true },
+    }],
     numberOfPhone: { type: String, require: false, default: "" },
-    isDeleted: { type: Boolean, default: false, select: false }
+    isDeleted: { type: Boolean, default: false, select: false },
 },
     { timestamps: true },
 );
