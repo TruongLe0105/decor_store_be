@@ -113,6 +113,9 @@ controllerUser.deactivateAccount = catchAsync(async (req, res, next) => {
 controllerUser.addNewAddress = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
     const { receiver, address, numberOfPhone } = req.body;
+    if (!Number(numberOfPhone)) {
+        throw new AppError(422, "Vui lòng nhập số điện thoại đúng!", "Lỗi thêm địa chỉ")
+    }
     let user = await User.findOne({ _id: currentUserId, isDeleted: false })
     if (!user) {
         throw new AppError(404, "User not found", "Update order address error")

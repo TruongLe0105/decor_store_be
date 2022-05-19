@@ -16,7 +16,7 @@ const userSchema = Schema({
     address: { type: String, require: false, default: "" },
     orderAddress: [{
         receiver: { type: String, require: true, default: "" },
-        numberOfPhone: { type: Number, require: true, default: 0 },
+        numberOfPhone: { type: String, require: true, default: 0 },
         address: { type: String, require: true, default: "", unique: true },
     }],
     numberOfPhone: { type: String, require: false, default: "" },

@@ -15,9 +15,8 @@ controllerProduct.addProductByAdmin = catchAsync(async (req, res, next) => {
 })
 
 controllerProduct.getListProduct = catchAsync(async (req, res, next) => {
-    let { limit, page, ...filter } = { ...req.query };
-
-    // console.log("name", ...filter)
+    let { limit, page, ...filter } = req.query;
+    console.log("name", filter.name)
 
     limit = parseInt(limit) || 5;
     page = parseInt(page) || 1;
@@ -31,20 +30,20 @@ controllerProduct.getListProduct = catchAsync(async (req, res, next) => {
                 [field]: { $regex: filter[field], $options: "i" },
             });
         }
-    })
+    });
     const filterCrireria = filterConditions.length
         ? { $and: filterConditions }
         : {};
 
-    const count = await Product.countDocuments(filterCrireria);
+
+    const count = await Product.countDocuments(filterConditions);
     const totalPage = Math.ceil(count / limit);
     const offset = limit * (page - 1);
 
-    let products = await Product.find(filterCrireria)
+    const products = await Product.find(filterCrireria)
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit);
-
     return sendResponse(res, 200, true, { products, count, totalPage }, null, "Get list products successful");
 })
 

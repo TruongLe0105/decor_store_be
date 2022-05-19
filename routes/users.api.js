@@ -18,7 +18,7 @@ router.put('/me/update', loginRequired, updateCurrentProfile);
 
 router.put('/me/address/update', loginRequired, validate([
     body('addressId').exists().isString().custom(checkObjectId),
-    body('address', 'numberOfPhone', 'receiver').exists().isString()
+    // body('address', 'receiver').exists().isString()
 ]), updateAddress);
 
 router.put('/me/password',
