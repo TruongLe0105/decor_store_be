@@ -11,26 +11,25 @@ router.get('/me', loginRequired, getCurrentUserProfile);
 router.post('/register', register);
 
 router.post('/me/address/add', loginRequired, validate([
-    body('address', 'numberOfPhone', 'receiver').exists().isString()
+    body('address', 'numberOfPhone', 'receiver').exists().isString().notEmpty()
 ]), addNewAddress);
 
 router.put('/me/update', loginRequired, updateCurrentProfile);
 
-router.put('/me/address/update', loginRequired, validate([
-    body('addressId').exists().isString().custom(checkObjectId),
-    // body('address', 'receiver').exists().isString()
+router.put('/address/:addressId', loginRequired, validate([
+    param('addressId').exists().isString().custom(checkObjectId)
 ]), updateAddress);
 
 router.put('/me/password',
     loginRequired,
     validate([
-        body("password", "newPassword").exists().isString()
+        body("password", "newPassword").exists().isString(),
     ]),
     changePassword);
 
 router.delete('/account/me', loginRequired, deactivateAccount);
 
-router.delete('/me/address/delete', loginRequired, validate([
+router.delete('/address/:addressId', loginRequired, validate([
     param('addressId').exists().isString().custom(checkObjectId)
 ]), deleteAddress);
 

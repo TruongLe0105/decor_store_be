@@ -1,29 +1,34 @@
 const express = require("express");
 const { param, body } = require("express-validator");
-const { addProductByAdmin, updateProductByAdmin, deleteProductByAdmin, getListProduct, getSingleProductById } = require("../controllers/product.controller");
+const { updateProductByAdmin, deleteProductByAdmin, getListProduct, getSingleProductById, addProductToList } = require("../controllers/product.controller");
 const { loginRequired, adminRequired } = require("../middlewares/authentication");
 const { checkObjectId, validate } = require("../middlewares/validator");
 const router = express.Router();
 
-router.post("/add", loginRequired, adminRequired, addProductByAdmin) //Admin route, làm test thử
+router.get("/", getListProduct);
 
-router.get("/", getListProduct)
+router.post("/add", loginRequired, adminRequired, validate([
+    body("imageUrl", "name", "categories").exists().isString().notEmpty(),
+    body("quantity", "price").exists().notEmpty(),
+]), addProductToList);
+
+// router.get("/search", getProductsByName);
 
 router.get("/:productId", validate([
     param("productId").exists().isString().custom(checkObjectId)
 ]),
-    getSingleProductById)
+    getSingleProductById);
 
-router.put("/update/:productId", loginRequired,
+router.put("/:productId", loginRequired, adminRequired,
     validate([
         param("productId").exists().isString().custom(checkObjectId)
     ]),
-    adminRequired, updateProductByAdmin) //Admin route
+    adminRequired, updateProductByAdmin);//Admin route
 
-router.delete("/delete/:productId", loginRequired,
+router.delete("/:productId", loginRequired, adminRequired,
     validate([
         param("productId").exists().isString().custom(checkObjectId)
     ]),
-    adminRequired, deleteProductByAdmin);//Admin route
+    deleteProductByAdmin);//Admin route
 
 module.exports = router;

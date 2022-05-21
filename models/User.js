@@ -3,23 +3,25 @@ const Schema = mongoose.Schema;
 const jwt = require("jsonwebtoken");
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
+const addressSchema = new Schema({
+    receiver: { type: String, require: true, default: "" },
+    numberOfPhone: { type: String, require: true, default: "" },
+    address: { type: String, require: true, default: "" },
+})
+
 const userSchema = Schema({
     cartId: { type: Schema.Types.ObjectId, require: true, ref: "Carts" },
-    userName: { type: String, require: true, unique: true },
-    fullName: { type: String, require: false, default: "" },
+    userName: { type: String, require: true, },
     email: { type: String, require: true, unique: true },
     password: { type: String, require: true, select: false },
+    fullName: { type: String, require: false, default: "" },
     role: { type: String, enum: ["admin", "user"], default: "user", },
-    avatarUrl: { type: String, require: false, default: "" },
-    city: { type: String, require: false, default: "" },
-    country: { type: String, require: false, default: "" },
-    address: { type: String, require: false, default: "" },
-    orderAddress: [{
-        receiver: { type: String, require: true, default: "" },
-        numberOfPhone: { type: String, require: true, default: 0 },
-        address: { type: String, require: true, default: "", unique: true },
-    }],
-    numberOfPhone: { type: String, require: false, default: "" },
+    avatarUrl: { type: String, require: false, default: "Empty" },
+    city: { type: String, require: false, default: "Empty" },
+    country: { type: String, require: false, default: "Empty" },
+    address: { type: String, require: false, default: "Empty" },
+    orderAddress: { type: [addressSchema], default: [] },
+    numberOfPhone: { type: String, require: false, default: "Empty" },
     isDeleted: { type: Boolean, default: false, select: false },
 },
     { timestamps: true },

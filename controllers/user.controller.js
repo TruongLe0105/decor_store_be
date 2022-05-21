@@ -11,8 +11,8 @@ controllerUser.register = catchAsync(async (req, res, next) => {
     let user = await User.findOne({ email });
     if (user) {
         throw new AppError(409, "User already exists", "Register error")
-    }
-    console.log("render")
+    };
+
     const salt = await bcrypt.genSalt(10);
     password = await bcrypt.hash(password, salt)
 
@@ -69,9 +69,6 @@ controllerUser.updateCurrentProfile = catchAsync(async (req, res, next) => {
     return sendResponse(res, 200, true, user, null, "Update profile successful")
 });
 
-// controllerUser.addOrderAddress = catchAsync(async(req,res, next)=>{
-
-// })
 controllerUser.changePassword = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
     let { password, newPassword } = req.body;
@@ -133,8 +130,12 @@ controllerUser.addNewAddress = catchAsync(async (req, res, next) => {
 
 controllerUser.updateAddress = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    const { receiver, address, numberOfPhone, addressId } = req.body;
-    console.log("body", req.body)
+    const { receiver, address, numberOfPhone } = req.body;
+    const { addressId } = req.params;
+
+    if (!Number(numberOfPhone)) {
+        throw new AppError(401, "Số điện thoại không đúng", "Update address error")
+    }
 
     let user = await User.findOne({ _id: currentUserId, isDeleted: false })
     if (!user) {
@@ -156,7 +157,7 @@ controllerUser.updateAddress = catchAsync(async (req, res, next) => {
 
 controllerUser.deleteAddress = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    const { addressId } = req;
+    const { addressId } = req.params;
     console.log("addressId", addressId);
     let user = await User.findOne({ _id: currentUserId, isDeleted: false })
     if (!user) {
@@ -169,18 +170,15 @@ controllerUser.deleteAddress = catchAsync(async (req, res, next) => {
         throw new AppError(404, "Địa chỉ không tồn tại", "Delete address error!")
     };
 
-    user.orderAddress.filter(address => address._id !== addressId);
-
+    // user.orderAddress = user.orderAddress.filter(address => !address._id.equals(addressId));
+    // user.orderAddress.pull(addressId);
+    user = await User.findByIdAndUpdate(
+        currentUserId,
+        { $pull: { orderAddress: { _id: addressId } } },
+    )
     await user.save();
 
     return sendResponse(res, 200, true, {}, null, "Delete address successful");
 })
-
-// filter 10 new users to donate a gift
-// controllerUser.getUsersByAdmin = catchAsync(async (req, res, next) => {
-//     let {limit, page} = 
-
-//     return sendResponse(res, 200, true, {}, null, "Get users successful")
-// })
 
 module.exports = controllerUser;
