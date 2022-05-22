@@ -32,12 +32,14 @@ controllerOrders.createNewOrder = catchAsync(async (req, res, next) => {
     return sendResponse(res, 200, true, { order }, null, "");
 });
 controllerOrders.getListOrders = catchAsync(async (req, res, next) => {
+    const { currentUserId } = req;
     let { limit, page, ...filter } = req.query;
     limit = limit || 5;
     page = page || 1;
+    console.log(filter)
 
-    const filterCondition = [];
-    const allow = ["pending", "shipping", "completed", "declined"]
+    const filterCondition = [{ isDeleted: false, user: currentUserId }];
+    const allow = ["status"]
     allow.forEach(field => {
         if (filter[field] !== undefined) {
             filterCondition.push({
@@ -47,17 +49,16 @@ controllerOrders.getListOrders = catchAsync(async (req, res, next) => {
     });
     const filterCriteria = filterCondition.length ? { $and: filterCondition } : {}
 
-    const count = await Cart.countDocuments({ filterCriteria });
+    const count = await Orders.countDocuments(filterCriteria);
     const offset = limit * (page - 1);
     const totalPage = Math.ceil(count / limit);
 
-    const order = await Orders.find({ filterCriteria })
+    const orders = await Orders.find(filterCriteria)
         .sort({ updatedAt: -1 })
         .skip(offset)
         .limit(limit)
-        .populate("listProducts")
 
-    return sendResponse(res, 200, true, { order, count, totalPage }, null, "")
+    return sendResponse(res, 200, true, { orders, count, totalPage }, null, "")
 });
 controllerOrders.updateOrders = catchAsync(async (req, res, next) => {
 

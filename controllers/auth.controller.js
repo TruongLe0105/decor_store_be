@@ -109,7 +109,8 @@ controllerAuth.updateOrderByAdmin = catchAsync(async (req, res, next) => {
     if (!order) {
         throw new AppError(404, "Order not found", "Update order error!")
     };
-    order = await Orders.findOne({ _id: orderId, status })
+    order = await Orders.findOne({ _id: orderId })
+    console.log(order)
 
     return sendResponse(res, 200, true, { order }, null, "Update successful!")
 })

@@ -22,9 +22,22 @@ controllerProduct.addProductToList = catchAsync(async (req, res, next) => {
 });
 
 controllerProduct.getListProduct = catchAsync(async (req, res, next) => {
-    let { limit, page, ...filter } = req.query;
-    limit = parseInt(limit) || 5;
+    let { limit, page, sortBy, ...filter } = req.query;
+    limit = parseInt(limit) || 20;
     page = parseInt(page) || 1;
+
+    let sort;
+    if (sortBy === "price_decrease") {
+        sort = { price: -1 }
+    } else if (sortBy === "price_ascending") {
+        sort = { price: 1 }
+    } else if (sortBy === "oldest") {
+        sort = { updatedAt: 1 }
+    } else {
+        sort = { updatedAt: -1 }
+    }
+
+    console.log(sort)
 
     let filterConditions = [{ isDeleted: false }];
 
@@ -49,11 +62,10 @@ controllerProduct.getListProduct = catchAsync(async (req, res, next) => {
     console.log("filterCrireria", filterCrireria)
     console.log("offset", offset)
     const products = await Product.find(filterCrireria)
-        .sort({ updatedAt: -1 })
+        .sort(sort)
         .skip(offset)
         .limit(limit);
 
-    // console.log("Product", products)
     return sendResponse(res, 200, true, { products, count, totalPage }, null, "Get list products successful");
 });
 

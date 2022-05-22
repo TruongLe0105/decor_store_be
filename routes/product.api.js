@@ -1,6 +1,12 @@
 const express = require("express");
 const { param, body } = require("express-validator");
-const { updateProductByAdmin, deleteProductByAdmin, getListProduct, getSingleProductById, addProductToList } = require("../controllers/product.controller");
+const {
+    updateProductByAdmin,
+    deleteProductByAdmin,
+    getListProduct,
+    getSingleProductById,
+    addProductToList,
+} = require("../controllers/product.controller");
 const { loginRequired, adminRequired } = require("../middlewares/authentication");
 const { checkObjectId, validate } = require("../middlewares/validator");
 const router = express.Router();
@@ -11,8 +17,6 @@ router.post("/add", loginRequired, adminRequired, validate([
     body("imageUrl", "name", "categories").exists().isString().notEmpty(),
     body("quantity", "price").exists().notEmpty(),
 ]), addProductToList);
-
-// router.get("/search", getProductsByName);
 
 router.get("/:productId", validate([
     param("productId").exists().isString().custom(checkObjectId)
