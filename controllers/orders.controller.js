@@ -27,16 +27,13 @@ controllerOrders.createNewOrder = catchAsync(async (req, res, next) => {
     });
 
     let cart = await Cart.findOneAndUpdate({ _id: user.cartId, isDeleted: false }, { products: [], totalPrice: 0 });
-    console.log("cart", cart);
 
     return sendResponse(res, 200, true, { order }, null, "");
 });
+
 controllerOrders.getListOrders = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
-    let { limit, page, ...filter } = req.query;
-    limit = limit || 5;
-    page = page || 1;
-    console.log(filter)
+    let { ...filter } = req.query;
 
     const filterCondition = [{ isDeleted: false, user: currentUserId }];
     const allow = ["status"]
@@ -50,23 +47,55 @@ controllerOrders.getListOrders = catchAsync(async (req, res, next) => {
     const filterCriteria = filterCondition.length ? { $and: filterCondition } : {}
 
     const count = await Orders.countDocuments(filterCriteria);
-    const offset = limit * (page - 1);
-    const totalPage = Math.ceil(count / limit);
 
     const orders = await Orders.find(filterCriteria)
         .sort({ updatedAt: -1 })
-        .skip(offset)
-        .limit(limit)
 
-    return sendResponse(res, 200, true, { orders, count, totalPage }, null, "")
+    return sendResponse(res, 200, true, { orders }, null, "Get list order successful")
 });
+
 controllerOrders.updateOrders = catchAsync(async (req, res, next) => {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    console.log(status)
 
-    return sendResponse(res, 200, true, {}, null, "")
+    let order = await Orders.findOneAndUpdate({ _id: orderId }, { status });
+    if (!order) {
+        throw new AppError(404, "Not found order", "Update order error")
+    };
+
+    return sendResponse(res, 200, true, { order }, null, "")
 });
-controllerOrders.deleteOrders = catchAsync(async (req, res, next) => {
 
-    return sendResponse(res, 200, true, {}, null, "")
+controllerOrders.addProductsToCartByOldOrder = catchAsync(async (req, res, next) => {
+    const { currentUserId } = req;
+    const { orderId } = req.body;
+
+    let cart = await Cart.findOne({ user: currentUserId });
+    if (!cart) {
+        throw new AppError(404, "Not found cart", "Add product to cart error")
+    };
+    const order = await Orders.findById(orderId);
+    if (!order) {
+        throw new AppError(404, "Can not found cart by old order", "Add product to cart error")
+    };
+
+    const productIds = order.cartProducts.map(product => product._id);
+    console.log(productIds)
+
+    cart.products = cart.products.filter(({ _id }) => !productIds.includes(_id.toString()));
+    const priceAfterFilter = cart.products.reduce((acc, cur) => {
+        return acc + cur.quantity * cur.price
+    }, 0);
+
+    order.cartProducts.map(product => {
+        cart.products.unshift(product)
+    });
+
+    cart.totalPrice = order.totalPrice + priceAfterFilter;
+    await cart.save();
+
+    return sendResponse(res, 200, true, { cart }, null, "Add product to cart by old order successful")
 });
 
 module.exports = controllerOrders;

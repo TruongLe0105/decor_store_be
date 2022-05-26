@@ -37,8 +37,6 @@ controllerProduct.getListProduct = catchAsync(async (req, res, next) => {
         sort = { updatedAt: -1 }
     }
 
-    console.log(sort)
-
     let filterConditions = [{ isDeleted: false }];
 
     const allow = ["name", "categories"];
@@ -59,8 +57,6 @@ controllerProduct.getListProduct = catchAsync(async (req, res, next) => {
     const totalPage = Math.ceil(count / limit);
     const offset = limit * (page - 1);
 
-    console.log("filterCrireria", filterCrireria)
-    console.log("offset", offset)
     const products = await Product.find(filterCrireria)
         .sort(sort)
         .skip(offset)

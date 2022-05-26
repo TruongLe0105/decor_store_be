@@ -30,7 +30,6 @@ mongoose
 )
     .then(() => {
         console.log(`DB connected`);
-        // require("./createFriend.js");
     })
     .catch((err) => console.log(err));
 

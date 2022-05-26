@@ -6,10 +6,11 @@ const cartSchema = Schema(
         user: { type: Schema.Types.ObjectId, require: true },
         products: [
             {
-                name: { type: String, require: true },
-                price: { type: Number, require: true },
-                imageUrl: { type: String, require: true },
+                name: { type: String, require: true, default: "" },
+                categories: { type: String, require: true, default: "" },
+                imageUrl: { type: String, require: true, default: "" },
                 quantity: { type: Number, default: 1, require: true },
+                price: { type: Number, require: true },
             }
         ],
         isDeleted: { type: Boolean, default: false, select: false },

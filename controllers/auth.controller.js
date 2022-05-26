@@ -36,10 +36,8 @@ controllerAuth.loginWithEmailPassword = catchAsync(async (req, res, next) => {
 
 controllerAuth.getListUsers = catchAsync(async (req, res, next) => {
     let { limit, page, ...filter } = req.query;
-    console.log("limit", limit)
     limit = limit || 5;
     page = page || 1;
-    console.log(filter)
 
     const filterCondition = [{ isDeleted: false }];
 
@@ -53,7 +51,6 @@ controllerAuth.getListUsers = catchAsync(async (req, res, next) => {
     });
 
     const filterCriteria = filterCondition.length ? { $and: filterCondition } : {}
-    console.log(filterCriteria)
     const count = await User.countDocuments(filterCriteria);
     const totalPage = Math.ceil(count / limit);
     const offset = limit * (page - 1);
@@ -68,10 +65,8 @@ controllerAuth.getListUsers = catchAsync(async (req, res, next) => {
 
 controllerAuth.getListOrdersByAdmin = catchAsync(async (req, res, next) => {
     let { limit, page, ...filter } = req.query;
-    console.log("limit", limit)
     limit = limit || 5;
     page = page || 1;
-    console.log(filter)
 
     const filterCondition = [{ isDeleted: false }];
 
@@ -85,7 +80,6 @@ controllerAuth.getListOrdersByAdmin = catchAsync(async (req, res, next) => {
     });
 
     const filterCriteria = filterCondition.length ? { $and: filterCondition } : {}
-    console.log(filterCriteria)
     const count = await Orders.countDocuments(filterCriteria);
     const totalPage = Math.ceil(count / limit);
     const offset = limit * (page - 1);
@@ -105,12 +99,11 @@ controllerAuth.updateOrderByAdmin = catchAsync(async (req, res, next) => {
         throw new AppError(404, "not found orderId", "update error")
     }
 
-    let order = await Orders.findByIdAndUpdate(orderId, { status });
+    let order = await Orders.findOneAndUpdate({ _id: orderId }, { status });
     if (!order) {
         throw new AppError(404, "Order not found", "Update order error!")
     };
-    order = await Orders.findOne({ _id: orderId })
-    console.log(order)
+    // order = await Orders.findOne({ _id: orderId })
 
     return sendResponse(res, 200, true, { order }, null, "Update successful!")
 })

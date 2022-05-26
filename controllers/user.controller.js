@@ -64,7 +64,7 @@ controllerUser.updateCurrentProfile = catchAsync(async (req, res, next) => {
         };
     });
 
-    await user.save();
+    await user.save()
 
     return sendResponse(res, 200, true, user, null, "Update profile successful")
 });
@@ -158,7 +158,6 @@ controllerUser.updateAddress = catchAsync(async (req, res, next) => {
 controllerUser.deleteAddress = catchAsync(async (req, res, next) => {
     const { currentUserId } = req;
     const { addressId } = req.params;
-    console.log("addressId", addressId);
     let user = await User.findOne({ _id: currentUserId, isDeleted: false })
     if (!user) {
         throw new AppError(404, "User not found", "Update order address error")

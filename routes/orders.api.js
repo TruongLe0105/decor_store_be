@@ -1,6 +1,6 @@
 const express = require("express");
-const { body } = require("express-validator");
-const { createNewOrder, getListOrders, updateOrders, deleteOrders } = require("../controllers/orders.controller");
+const { body, param } = require("express-validator");
+const { createNewOrder, getListOrders, updateOrders, deleteOrders, addProductsToCartByOldOrder } = require("../controllers/orders.controller");
 const { loginRequired, adminRequired } = require("../middlewares/authentication");
 const { validate, checkObjectId } = require("../middlewares/validator");
 const router = express.Router();
@@ -12,7 +12,12 @@ router.post("/add", loginRequired,
     createNewOrder);
 
 router.get("/list", loginRequired, getListOrders);
-router.put("/update/:ordersId", loginRequired, updateOrders);
-router.delete("/delete/:ordersId", loginRequired, deleteOrders);
+router.put("/:orderId", loginRequired, validate([
+    param("orderId").exists().isString().custom(checkObjectId).notEmpty()
+]), updateOrders);
+
+router.post("/cart", loginRequired, validate([
+    body("orderId").exists().isString().custom(checkObjectId).notEmpty()
+]), addProductsToCartByOldOrder);
 
 module.exports = router;
